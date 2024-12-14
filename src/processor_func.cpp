@@ -91,7 +91,7 @@ void execute_code(proc_data_t *proc_data, proc_err *return_err) {
     while (1) {
 
         com = code[ip++];
-        printf("com[%d] : {%d}", ip - 1, com);
+        // printf("com[%d] : {%d}", ip - 1, com);
         // printf("com[%d]: '%d'\n", ip, com);
         // fprintf_bin(stdout, filter_mask & com);
         // printf("{%d} vs {%d}\n", com, filter_mask & com);
