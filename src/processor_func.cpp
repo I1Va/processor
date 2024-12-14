@@ -16,6 +16,11 @@
 #include "string_funcs.h"
 #include "proc_err.h"
 
+
+void proc_data_t_ctor(proc_data_t *proc_data) {
+    return;
+}
+
 size_t get_bin_code_real_sz(long long bin_code[], const size_t n) {
     for (size_t bin_code_idx = 0; bin_code_idx < n; bin_code_idx++) {
         if (bin_code[bin_code_idx] == HLT_COM) {
@@ -36,7 +41,7 @@ size_t get_file_sz(const char *const path, proc_err *return_err) {
     return (size_t) buf.st_size;
 }
 
-size_t bin_code_read(const char path[], int code[], proc_err *return_err) {
+int bin_code_read(const char path[], int code[], proc_err *return_err) {
     size_t com_idx = 0;
     FILE *bin_code_file_ptr = NULL;
     size_t bin_code_file_sz = 0;
@@ -60,14 +65,14 @@ size_t bin_code_read(const char path[], int code[], proc_err *return_err) {
 
     fclose(bin_code_file_ptr);
 
-    return com_n;
+    return (int) com_n;
 
     exit_mark:
     if (bin_code_file_ptr != NULL) {
         fclose(bin_code_file_ptr);
     }
 
-    return 0;
+    return -1;
 }
 
 void execute_code(proc_data_t *proc_data, proc_err *return_err) {
@@ -84,7 +89,9 @@ void execute_code(proc_data_t *proc_data, proc_err *return_err) {
     // printf("filter_mask\n");
     // fprintf_bin(stdout, filter_mask);
     while (1) {
+
         com = code[ip++];
+        printf("com[%d] : {%d}", ip - 1, com);
         // printf("com[%d]: '%d'\n", ip, com);
         // fprintf_bin(stdout, filter_mask & com);
         // printf("{%d} vs {%d}\n", com, filter_mask & com);
