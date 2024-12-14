@@ -16,14 +16,6 @@
 #include "string_funcs.h"
 #include "proc_err.h"
 
-const size_t REG_LIST_SZ = 4;
-long long reg_list[REG_LIST_SZ] = {};
-
-const long long ACCURACY = 100;
-const long long SQRT_ACCURACY = 10;
-
-long long RAM[RAM_sz] = {};
-
 size_t get_bin_code_real_sz(long long bin_code[], const size_t n) {
     for (size_t bin_code_idx = 0; bin_code_idx < n; bin_code_idx++) {
         if (bin_code[bin_code_idx] == HLT_COM) {
@@ -78,14 +70,17 @@ size_t bin_code_read(const char path[], int code[], proc_err *return_err) {
     return 0;
 }
 
-void execute_code(int code[], proc_err *return_err) {
+void execute_code(proc_data_t *proc_data, proc_err *return_err) {
     long long ip = 0;
     long long com = 0;
 
     stk_err stk_last_err = STK_ERR_OK;
+    int *code = proc_data->code;
+    long long *PROC_RAM = proc_data->PROC_RAM;
+    long long *REG_LIST = proc_data->REG_LIST;
 
-    stack_t stk = {};  STACK_INIT(&stk, 0, sizeof(long long), stdout, &stk_last_err);
-    stack_t call_stk = {}; STACK_INIT(&call_stk, 0, sizeof(long long), stdout, &stk_last_err);
+    stack_t stk = {};  STACK_INIT(&stk, 0, sizeof(long long), NULL, &stk_last_err);
+    stack_t call_stk = {}; STACK_INIT(&call_stk, 0, sizeof(long long), NULL, &stk_last_err);
     // printf("filter_mask\n");
     // fprintf_bin(stdout, filter_mask);
     while (1) {
@@ -249,8 +244,8 @@ void execute_code(int code[], proc_err *return_err) {
                 for (size_t i = 0; i < CONSOLE_HEIGHT; i++) {
                     for (size_t j = 0; j < CONSOLE_WIDTH; j++) {
 
-                        printf("%c", RAM[i * CONSOLE_WIDTH + j] / ACCURACY);
-                        // printf("%c", RAM[i * CONSOLE_WIDTH + j] / ACCURACY); // FIXME: чтобы круг был круглым, можно раскоментить эту строчку
+                        printf("%c", PROC_RAM[i * CONSOLE_WIDTH + j] / ACCURACY);
+                        // printf("%c", PROC_RAM[i * CONSOLE_WIDTH + j] / ACCURACY); // FIXME: чтобы круг был круглым, можно раскоментить эту строчку
                         // т.е. кажду. клетку дублировать
                     }
                     printf("\n");
@@ -266,18 +261,18 @@ void execute_code(int code[], proc_err *return_err) {
                     argv_sum = 0;
                     if (com & MASK_REG) {
                         reg_id = code[ip++];
-                        argv_sum += reg_list[reg_id] / ACCURACY;
+                        argv_sum += REG_LIST[reg_id] / ACCURACY;
                     }
                     if (com & MASK_IMMC) {
                         argv = code[ip++];
                         argv_sum += argv;
                     }
-                    stack_push(&stk, &RAM[argv_sum], &stk_last_err);
+                    stack_push(&stk, &PROC_RAM[argv_sum], &stk_last_err);
                 } else {
                     argv_sum = 0;
                     if (com & MASK_REG) {
                         reg_id = code[ip++];
-                        argv_sum += reg_list[reg_id];
+                        argv_sum += REG_LIST[reg_id];
                     }
                     if (com & MASK_IMMC) {
                         argv = code[ip++];
@@ -289,26 +284,26 @@ void execute_code(int code[], proc_err *return_err) {
             case POP_COM:
                 if (com & MASK_MEM) { // TODO: вынести в отдельную функцию getArg
                     argv_sum = 0;
-                    printf("argv_sum: [%d]\n", argv_sum);
+                    // printf("argv_sum: [%d]\n", argv_sum);
                     if (com & MASK_REG) {
                         reg_id = code[ip++];
-                        printf("reg_id: [%d]\n", reg_id);
-                        printf("reg_list[%d]: [%d]\n", reg_id, reg_list[reg_id]);
-                        argv_sum += reg_list[reg_id] / ACCURACY;
+                        // printf("reg_id: [%d]\n", reg_id);
+                        // printf("reg_list[%d]: [%d]\n", reg_id, REG_LIST[reg_id]);
+                        argv_sum += REG_LIST[reg_id] / ACCURACY;
                     }
-                    printf("argv_sum: [%d]\n", argv_sum);
+                    // printf("argv_sum: [%d]\n", argv_sum);
                     if (com & MASK_IMMC) {
                         argv = code[ip++];
                         argv_sum += argv;
                     }
-                    printf("&RAM[%d]: [%p]\n", argv_sum, &RAM[argv_sum]);
-                    printf("\n");
+                    // printf("&PROC_RAM[%d]: [%p]\n", argv_sum, &PROC_RAM[argv_sum]);
+                    // printf("\n");
 
-                    stack_pop(&stk, &RAM[argv_sum], &stk_last_err);
+                    stack_pop(&stk, &PROC_RAM[argv_sum], &stk_last_err);
                 } else {
                     if (com & MASK_REG) {
                         reg_id = code[ip++];
-                        stack_pop(&stk, &reg_list[reg_id], &stk_last_err);
+                        stack_pop(&stk, &REG_LIST[reg_id], &stk_last_err);
                     } else {
                         stack_pop(&stk, NULL, &stk_last_err);
                     }

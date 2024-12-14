@@ -5,7 +5,7 @@
 #include <limits.h>
 
 
-const size_t max_bin_code_sz = 1024;
+const size_t MAX_BIN_CODE_SZ = 1024;
 
 const int MASK_MEM  = 1 << 8;
 const int MASK_REG  = 1 << 7;

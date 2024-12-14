@@ -10,11 +10,11 @@
 
 int main() {
     proc_err proc_last_err = PROC_ERR_OK;
-    int code[max_bin_code_sz] = {};
+    proc_data_t proc_data = {};
 
-    bin_code_read("./bin_code.txt", code, &proc_last_err); // FIXME: есть баги
+    bin_code_read("./../bin_code.txt", proc_data.code, &proc_last_err); // FIXME: есть баги
 
-    execute_code(code, &proc_last_err);
+    execute_code(&proc_data, &proc_last_err);
 
     return EXIT_SUCCESS;
 }
