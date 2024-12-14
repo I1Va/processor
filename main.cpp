@@ -12,7 +12,7 @@ int main() {
     proc_err proc_last_err = PROC_ERR_OK;
     int code[max_bin_code_sz] = {};
 
-    bin_code_read("./bin_code.txt", code, &proc_last_err);
+    bin_code_read("./bin_code.txt", code, &proc_last_err); // FIXME: есть баги
 
     execute_code(code, &proc_last_err);
 
